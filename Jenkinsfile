@@ -5,7 +5,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 // Checkout code from version control
-                git url: 'https://github.com/saravanan014/FinalYearProject-Pothole-Detection-System'
+                git branch:'main', url: 'https://github.com/saravanan014/FinalYearProject-Pothole-Detection-System.git'
             }
         }
 
