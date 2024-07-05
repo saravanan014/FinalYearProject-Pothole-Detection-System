@@ -45,7 +45,7 @@ pipeline {
   }
 } */
 
-pipeline {
+/*pipeline {
     agent any
 
     environment {
@@ -107,6 +107,54 @@ pipeline {
         }
         failure {
             echo 'Pipeline failed! Please check the logs for details.'
+        }
+    }
+} */
+
+
+pipeline {
+    agent any
+
+    environment {
+        SONARQUBE_SERVER = 'sonar'  // Ensure this matches the name of your SonarQube server in Jenkins
+        SONARQUBE_TOKEN = credentials('sonar')  // Replace with your SonarQube token ID from Jenkins credentials
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                // Checkout code from version control
+                git branch: 'main', url: 'https://github.com/saravanan014/FinalYearProject-Pothole-Detection-System.git', credentialsId: 'github'
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv(installationName: "${SONARQUBE_SERVER}") {
+                    // Run SonarQube analysis
+                    sh 'sonar-scanner -Dsonar.projectKey=my-python-project -Dsonar.sources=. -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONARQUBE_TOKEN'
+                }
+            }
+        }
+
+        stage('Quality Gate') {
+            steps {
+                // Wait for SonarQube analysis report and check quality gate status
+                timeout(time: 1, unit: 'HOURS') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            // Example: Notify on success
+            echo 'Pipeline succeeded! SonarQube analysis completed successfully.'
+        }
+        failure {
+            // Example: Notify on failure
+            echo 'Pipeline failed! SonarQube analysis did not complete successfully.'
         }
     }
 }
